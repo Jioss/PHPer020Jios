@@ -6,87 +6,205 @@
 //define your token
 define("TOKEN", "Jios");
 $wechatObj = new wechatCallbackapiTest();
-$wechatObj->valid();
+$wechatObj->responseMsg();
 
 class wechatCallbackapiTest
 {
-	public function valid()
+    public function valid()
     {
-        $echoStr = $_GET["echostr"];                     //从微信用户获取一个随机变量$echoStr
+        $echoStr = $_GET["echostr"];
 
         //valid signature , option
-        if($this->checkSignature()){                     //访问checkSignature签名验证方法，如果签名一致，输出变量$echoStr
-        	echo $echoStr;
-        	exit;
+        if($this->checkSignature()){
+            echo $echoStr;
+            exit;
         }
     }
 
     public function responseMsg()
     {
-		//get post data, May be due to the different environments
-		$postStr = $GLOBALS["HTTP_RAW_POST_DATA"];         //将信息保存到变量$当中，同时解析用户数据
+        //get post data, May be due to the different environments
+        $postStr = $GLOBALS["HTTP_RAW_POST_DATA"];
 
-      	//extract post data
-		if (!empty($postStr)){  //如果用户端数据不为空
+        //extract post data
+        if (!empty($postStr)){
                 /* libxml_disable_entity_loader is to prevent XML eXternal Entity Injection,
-                   the best way is to check the validity of xml by yourself    libxml_disable_entity_loader是防止XML外部实体注入，
-                   最好的办法就是自己检查XML的有效性*/
+                   the best way is to check the validity of xml by yourself */
                 libxml_disable_entity_loader(true);
-              	$postObj = simplexml_load_string($postStr, 'SimpleXMLElement', LIBXML_NOCDATA);
-                $fromUsername = $postObj->FromUserName;     //将用户端的用户名赋予变量$fromUsername
-                $toUsername = $postObj->ToUserName;         //将公众号ID赋予变量$toUsername
-                $keyword = trim($postObj->Content);         //将发来的文本内容去空格后赋予变量$keyword
-                $time = time();
+                $postObj = simplexml_load_string($postStr, 'SimpleXMLElement', LIBXML_NOCDATA);
+                $fromUsername = $postObj->FromUserName;
+                $toUsername = $postObj->ToUserName;
+                $keyword = trim($postObj->Content);
+                $time = time();  
                 $textTpl = "<xml>
-							<ToUserName><![CDATA[%s]]></ToUserName>
-							<FromUserName><![CDATA[%s]]></FromUserName>
-							<CreateTime>%s</CreateTime>
-							<MsgType><![CDATA[%s]]></MsgType>
-							<Content><![CDATA[%s]]></Content>
-							<FuncFlag>0</FuncFlag> 
-							</xml>";                      //  微信目标方  来远方 系统时间 回复微信的信息类型 内容
-                                                          //<FuncFlag>0</FuncFlag>    是否为星标微信         
-				if(!empty( $keyword ))                    // 如果用户端发来的消息不是空
-                {
-              		$msgType = "text";                    // 回复文本消息为text文本类型
-                	$contentStr = "Welcome to wechat world!";//进行文本回复的内容，如果要改，只要在这里更改就可以 
-                	$resultStr = sprintf($textTpl, $fromUsername, $toUsername, $time, $msgType, $contentStr);
-                	                                      //将XML格式中的变量分别赋值
-                    echo $resultStr;                      //   输出回复消息
-                }else{
-                	echo "Input something...";            //输入内容，此消息不会发送到微信端，只是测试时候使用
+                            <ToUserName><![CDATA[%s]]></ToUserName>
+                            <FromUserName><![CDATA[%s]]></FromUserName>
+                            <CreateTime>%s</CreateTime>
+                            <MsgType><![CDATA[%s]]></MsgType>
+                            <Content><![CDATA[%s]]></Conte nt>
+                            <FuncFlag>0</FuncFlag>
+                            </xml>";             
+                  
+                $ev = $postObj->Event;
+                if ($ev == "subscribe") {
+                    
+                    $textTpl = "<xml>
+                          <ToUserName><![CDATA[%s]]></ToUserName>
+                          <FromUserName><![CDATA[%s]]></FromUserName>
+                          <CreateTime>%s</CreateTime>
+                          <MsgType><![CDATA[news]]></MsgType>
+                          <ArticleCount>4</ArticleCount>
+                          <Articles>
+
+                          <item>
+                          <Title><![CDATA[感谢关注!回复1、2、3了解更多]]></Title>
+                          <Description><![CDATA[descriptionl]]></Description>
+                          <PicUrl><![CDATA[http://jioszhang.imwork.net/1.png]]></PicUrl>
+                          <Url><![CDATA[http://www.baidu.com]]></Url>
+                          </item>
+
+                          <item>
+                          <Title><![CDATA[这里是微信开发者导航]]></Title>
+                          <Description><![CDATA[descriptionl]]></Description>
+                          <PicUrl><![CDATA[http://jioszhang.imwork.net/2.jpg]]></PicUrl>
+                          <Url><![CDATA[http://yiqixueweixin.sinaapp.com/]]></Url>
+                          </item>
+
+                          <item>
+                          <Title><![CDATA[微信内网页开发工具包(微信JS-SDK)详解【含源码】]]></Title>
+                          <Description><![CDATA[descriptionl]]></Description>
+                          <PicUrl><![CDATA[http://www.9miao.com/template/dean_hotspot_141011/deancss/logo.png]]></PicUrl>
+                          <Url><![CDATA[http://www.9miao.com/thread-67512-1-1.html]]></Url>
+                          </item>
+
+                          <item>
+                          <Title><![CDATA[微信公众平台开发]]></Title>
+                          <Description><![CDATA[descriptionl]]></Description>
+                          <PicUrl><![CDATA[http://mp.weixin.qq.com/wiki/static/assets/ac9be2eafdeb95d50b28fa7cd75bb499.png]]></PicUrl>
+                          <Url><![CDATA[http://mp.weixin.qq.com/wiki/home/index.html]]></Url>
+                          </item>
+
+
+                         
+
+                          </Articles>
+                          <FuncFlag>1</FuncFlag>
+
+                          </xml>";
+                    $resultStr = sprintf($textTpl, $fromUsername, $toUsername, $time);
+                    echo $resultStr;
+
+                 //     $msgType="text";
+                 //     $contentStr="感谢您的关注！！ Welcome to 陈建凯工作室！回复1：我的姓名、2：我的专业、3：了解更多，谢谢！";
+            
+                    // $resultStr = sprintf($textTpl, $fromUsername, $toUsername, $time, $msgType, $contentStr);
+                    // echo $resultStr;
+               
                 }
 
+
+
+
+
+
+                if(!empty( $keyword ))
+                {
+                    $msgType = "text";
+                    switch ($keyword) {
+                        case '1':
+                        $contentStr = "个人简介：我叫张志富，是广州大学华软学院2012级软件开发专业4班的学生。Welcome to  Jios 软件开发工作室。哈哈！！";
+                            break;
+                        case '2':
+                        $contentStr = "天气预报：直接输入城市名或者经纬度即可查询天气情况";
+                            break;
+                        case '3':
+                        $contentStr = "音乐欣赏：";
+                                $musicTpl = "<xml> 
+                                            <ToUserName><![CDATA[%s]]></ToUserName> 
+                                            <FromUserName><![CDATA[%s]]></FromUserName> 
+                                            <CreateTime>%s</CreateTime> 
+                                            <MsgType><![CDATA[%s]]></MsgType> 
+                                            <Music> 
+                                                    <Title><![CDATA[%s]]></Title> 
+                                                    <Description><![CDATA[%s]]></Description> 
+                                                    <MusicUrl><![CDATA[%s]]></MusicUrl> 
+                                                    <HQMusicUrl><![CDATA[%s]]></HQMusicUrl> 
+                                            </Music> 
+                                            </xml>"; 
+                                $msgType = "music"; //表音乐消息类型  
+                                $Title = " Fade.mp3"; //音乐标题  
+                                $Description = "Alan Walker";//音乐描述  
+                                $MusicUrl = $HQMusicUrl = "http://jioszhang.imwork.net/Fade.mp3";  
+
+                                $resultStr = sprintf($musicTpl, $fromUsername, $toUsername, $time, $msgType,  
+                                $Title, $Description, $MusicUrl, $HQMusicUrl);//经过sprintf处理  
+                                echo $resultStr; 
+                        
+                            
+                    }
+                    
+                    $resultStr = sprintf($textTpl, $fromUsername, $toUsername, $time, $msgType, $contentStr);
+                    echo $resultStr;
+                }
+
+
+               
+ 
+
+ /*                          $musicTpl= "<xml>
+                            <ToUserName><![CDATA[%s]]></ToUserName>
+                            <FromUserName><![CDATA[%s]]></FromUserName>
+                            <CreateTime>%s</CreateTime>
+                            <MsgType><![CDATA[music]]></MsgType>
+                            <Music>
+                            <Title><![CDATA[Alan Walker - Fade - 纯音乐版.mp3]]</Title>
+                            <Description><![CDATA[Alan Walker]]></Description>
+                            <MusicUrl><![CDATA[http://jioszhang.imwork.net/Fade.mp3]]></MusicUrl>
+                            <HQMusicUrl><![CDATA[http://jioszhang.imwork.net/Fade.mp3]]></HQMusicUrl>
+                            </Music>        
+                        
+                            </xml>"; 
+*/      
+                
+                    // $resultStr = sprintf($textTpl, $fromUsername, $toUsername, $time);
+        //          echo $resultStr;
+             
+
+
+
+
         }else {
-        	echo "";
-        	exit;
+            echo "";
+            exit;
         }
+
+
     }
-		
-	private function checkSignature()                    // 建立私有方法验证签名
-	{
+        
+    private function checkSignature()   //校验 署名
+    {
         // you must define TOKEN by yourself
         if (!defined("TOKEN")) {
-            throw new Exception('TOKEN is not defined!');
+            throw new Exception('TOKEN is not defined!');  //抛出一个异常
         }
         
-        $signature = $_GET["signature"];               //从用户端获取签名赋予变量$signature
-        $timestamp = $_GET["timestamp"];               //从用户段获取时间赋予变量$timestamp
-        $nonce = $_GET["nonce"];                       //从用户段获取随机数赋予变量$snonce
-        		
-		$token = TOKEN;                                //将常量TOKEN值赋予变量$token
-		$tmpArr = array($token, $timestamp, $nonce);   //建立数组变量$tmpArr
-        // use SORT_STRING rule
-		sort($tmpArr, SORT_STRING);                   //新键名 排序
-		$tmpStr = implode( $tmpArr );                 //字典排序
-		$tmpStr = sha1( $tmpStr );                    //加密 
-		
-		if( $tmpStr == $signature ){                  //判断$tmpStr与$signature变量是否同值
-			return true;
-		}else{
-			return false;
-		}
-	}
+        $signature = $_GET["signature"];
+        $timestamp = $_GET["timestamp"];
+        $nonce = $_GET["nonce"];
+                
+        $token = TOKEN;
+        $tmpArr = array($token, $timestamp, $nonce); //把获取到的参数  放进一个临时数组
+        // use SORT_STRING rule  
+        sort($tmpArr, SORT_STRING); //排序算法，原有的sort($tmpArr)修改为sort($tmpArr, SORT_STRING)，php中sort（）函数默认为SORT_REGULAR，即原来的数据类型。
+        $tmpStr = implode( $tmpArr );
+        $tmpStr = sha1( $tmpStr );
+        
+        if( $tmpStr == $signature ){
+            return true;
+        }else{
+            return false;
+        }
+    }
 }
 
 ?>
